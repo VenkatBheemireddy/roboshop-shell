@@ -23,5 +23,6 @@ systemctl start catalogue
 
 rm -rf /etc/yum.repos.d/mongo.repo
 cp mongo.repo /etc/yum.repos.d/mongo.repo
+
 dnf install mongodb-mongosh -y
 mongosh --host mongodb-dev.azdevopsv82.online </app/db/master-data.js
