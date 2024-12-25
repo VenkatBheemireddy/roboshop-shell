@@ -1,31 +1,18 @@
-# Install NodeJS
-dnf module disable nodejs -y
-dnf module enable nodejs:20 -y
-dnf install nodejs -y
+source ./common.sh
 
+echo Copy MongoDB repo file
+cp mongo.repo /etc/yum.repos.d/mongo.repo &>>$log_file
+Status_Print $?
 
-#Configure the application
-useradd roboshop
-rm -rf /app
-mkdir /app
+echo Install MongoDB
+dnf install mongodb-org -y &>>$log_file
+Status_Print $?
 
-# Download the application code
-curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
-cd /app
-unzip /tmp/catalogue.zip
+echo Update MongoDB listen address
+sed -i 's/127.0.0.1/0.0.0.0/' /etc/mongod.conf &>>$log_file
+Status_Print $?
 
-# Download the dependencies
-cd /app
-npm install
-
-#Setup SystemD Catalogue Service
-cp catalogue.service /etc/systemd/system/catalogue.service
-
-# Start the service
-systemctl enable catalogue
-systemctl start catalogue
-
-# To load schema
-cp /etc/yum.repos.d/mongo.repo /etc/yum.repos.d/mongo.repo
-dnf install mongodb-mongosh -y
-mongosh --host MONGODB-SERVER-IPADDRESS </app/db/master-data.js
+echo Start MongoDB service
+systemctl enable mongod &>>$log_file
+systemctl restart mongod &>>$log_file
+Status_Print $?
